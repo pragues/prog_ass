@@ -6,4 +6,4 @@ Group members:
 - 122090872 JIN Yiyao
 
 ### Programming assignment1:
-Document similarity comparison by naive world frequency counting. 
+Document similarity comparison in naive word frequency counting. 
