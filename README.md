@@ -11,3 +11,9 @@ QIU Runheng personal branch: meloise, from `meloise-ddd`
 
 ### Programming assignment1:
 Document similarity comparison in naive word frequency counting. 
+Implementation includes: change the way of concatenation, sort the vectors in advance, mergesort etc.
+
+
+to be continued
+
+### Project1
