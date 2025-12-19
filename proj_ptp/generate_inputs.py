@@ -12,7 +12,7 @@ def generate_euclidean_graph(n, max_coord=1000):
     G_sparse = nx.Graph()
     G_sparse.add_nodes_from(range(n))
     
-    # add random edges to ensure connectivity
+    # add random edges
     nodes = list(range(n))
     random.shuffle(nodes)
     for i in range(len(nodes) - 1):
@@ -77,6 +77,7 @@ def generate_input(filename, alpha, max_nodes, num_friends):
 
 
 def main():
+    # set seed for reproductivity
     random.seed(42)
     import os
     os.makedirs("inputs", exist_ok=True)

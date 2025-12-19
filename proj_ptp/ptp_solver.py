@@ -52,7 +52,7 @@ def ptp_solver(G:nx.DiGraph, H:list, alpha:float):
         
         return infeasible_count
     
-    def calculate_cost(tour, H):
+    def calculate_cost(tour, H, alpha):
         # calculate driving cost
         driving_cost = 0
         for i in range(len(tour) - 1):
@@ -91,11 +91,14 @@ def ptp_solver(G:nx.DiGraph, H:list, alpha:float):
                             min_walk = walk_dist
                 walking_cost += min_walk
         
-        total_cost = driving_cost + alpha * walking_cost
+        total_cost = alpha * driving_cost + walking_cost
         return total_cost
     
     T = [0]
-    for k in range(1, n + 1):
+    for k in range(1, n * 2):
+        # generate all candidate tours
+        candidates = []
+        
         for i in all_nodes:
             T_candidate = None
             
@@ -107,34 +110,35 @@ def ptp_solver(G:nx.DiGraph, H:list, alpha:float):
                 T_candidate = least_cost_insert(T, i, shortest_paths)
             
             if T_candidate is not None and len(T_candidate) >= 2:
-                c_candidate = calculate_cost(T_candidate, H)
-                c_current = calculate_cost(T, H)
+                c_candidate = calculate_cost(T_candidate, H, alpha)
                 b_candidate = compute_infeasibility(T_candidate, H)
-                b_current = compute_infeasibility(T, H)
-                
-                if b_candidate == 0:
-                    # candidate is feasible
-                    if b_current == 0:
-                        # both feasible then take min
-                        if c_candidate < c_current:
-                            T = T_candidate
-                            break
-                    else:
-                        T = T_candidate
-                        break
-                else:
-                    if b_current > 0:
-                        # both infeasible then take less infeasibility or less cost one
-                        if b_candidate < b_current or (b_candidate == b_current and c_candidate < c_current):
-                            T = T_candidate
-                            break
+                candidates.append((T_candidate, c_candidate, b_candidate, i))
         
-        c_current = calculate_cost(T, H)
+        if not candidates:
+            break
+        
+        c_current = calculate_cost(T, H, alpha)
         b_current = compute_infeasibility(T, H)
         
+        # select best candidate
+        best_candidate = None
+        
         if b_current == 0:
-            # feasible solution to improve
+            # feasible then select min cost among feasible candidates
+            feasible_candidates = [c for c in candidates if c[2] == 0]
+            if feasible_candidates:
+                best_candidate = min(feasible_candidates, key=lambda x: x[1])
+        else:
+            # infeasible then select candidate with reduced infeasibility
+            better_candidates = [c for c in candidates if c[2] < b_current]
+            if better_candidates:
+                best_candidate = min(better_candidates, key=lambda x: (x[2], x[1]))
+        
+        if best_candidate is None or (b_current == 0 and c_current <= best_candidate[1]):
             break
+        
+        # update best
+        T = best_candidate[0]
     
     # start and end at 0
     if T[0] != 0:
